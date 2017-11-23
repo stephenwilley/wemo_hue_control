@@ -14,6 +14,8 @@ Work in progress.  Currently just printing debug info.
 
 ### Prerequisites
 
-Requires ouimeaux from here https://github.com/iancmcc/ouimeaux
+WeMo bits requires ouimeaux from https://github.com/iancmcc/ouimeaux
+Hue bits require PyPHue from https://github.com/rdespoiu/PyPHue
+Also relies on Python polling module
 
-Use `pip install ouimeaux`
+Use `pip install ouimeaux pyphue polling`
