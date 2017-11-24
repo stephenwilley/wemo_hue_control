@@ -97,8 +97,6 @@ def switch_toggle(sender, **kwargs):
 	    myHue.turnOff(light)
 	else:
 	    myHue.turnOn(light)
-	    myHue.setBrightness(light, 254)
-
 
 # Kick off the Hue thread
 hueWatcherThread().start()
