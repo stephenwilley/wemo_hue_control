@@ -10,7 +10,11 @@ You can either have the WeMo switch simply have no load on it, or you can use th
 
 ### Status
 
-Work in progress.  Currently just printing debug info.
+Works but needs improvement.  TODO:
+
+* Doesn't quit.  Tried using the ouimeaux documented KeyboardInterrupt try/except style but no joy.  Needs though.
+* It's a bit slow when you turn change the Hue lamps to propagate the change to WeMo.  Seems like a hub limitation.
+* Tidy up camel case vs underscores everywhere.
 
 ### Prerequisites
 
