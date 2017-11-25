@@ -21,7 +21,8 @@ brightness = 254
 # and figured pinging the hub less often is good, but I dunno if this really
 # matters.  If you had both normal and Hue lights on the same switch you'd
 # probably want to set this lower
-howOften = 3
+howOften = 1
+pollerTimeout = 10
 # WeMo light switch to listen for/set
 switchToListenFor = 'KitchenOverheads'
 # End of user modifyable bits
@@ -60,30 +61,35 @@ myHue = pyphue.PyPHue(user = hueUser, AppName = appname, wizard = False)
 logger.debug('Hue Bridge IP: %s', myHue.ip)
 logger.debug('Hue Lights:    %s', myHue.lightIDs)
 
+# Threading event used to trigger exit from the Hue thread
+run_event = threading.Event()
+run_event.set()
+
 # Hue watcher thread polls the Hue hub for changes
 # If it finds a change, it will set the WeMo switch appropriately
 class hueWatcherThread(threading.Thread):
     def run(self):
-        global myHue, switch
-
         logger.debug('Starting Hue polling')
-        while True:
-            currentOnOff = myHue.getLight(whichLights[0])['json']['state']['on']
-            logger.debug('Current Hue on/off state is: %s', currentOnOff)
+        while run_event.is_set():
+            onBeforePoll = myHue.getLight(whichLights[0])['json']['state']['on']
+            logger.debug('Current Hue on/off state is: %s', onBeforePoll)
             logger.debug('Watching for it to change')
-
-            polling.poll(
-                lambda: myHue.getLight(whichLights[0])['json']['state']['on'] != currentOnOff,
-                step = howOften,
-                poll_forever=True
-            )
-            logger.debug('State changed - Will update WeMo')
-            currentOnOff = myHue.getLight(whichLights[0])['json']['state']['on']
-            logger.debug('Lamps are now %s', ('Off', 'On')[currentOnOff])
-
-            # Now send the on/off to the WeMo switch
-            switch.on() if currentOnOff else switch.off()
-            logger.debug('Turning on switch') if currentOnOff else logger.debug('Turning off switch')
+            # The poll times out and loops after 10 seconds so that the main thread
+            # can quit this for KeyboardInterrupt etc without waiting forever
+            try:
+                polling.poll(
+                    lambda: myHue.getLight(whichLights[0])['json']['state']['on'] != onBeforePoll,
+                    step = howOften,
+                    timeout = pollerTimeout
+                )
+            except polling.TimeoutException, te:
+                logger.debug('Hue poller timed out')
+            onAfterPoll = myHue.getLight(whichLights[0])['json']['state']['on']
+            if onAfterPoll != onBeforePoll:
+	        logger.debug('Lamps are now %s', ('Off', 'On')[onAfterPoll])
+                # Now send the on/off to the WeMo switch
+                switch.on() if onAfterPoll else switch.off()
+                logger.debug('Turning on switch') if onAfterPoll else logger.debug('Turning off switch')
 
 # Handle the WeMo stuff in the main thread because it needs to receive signals
 # Create a statechange receiver
@@ -104,3 +110,7 @@ hueWatcherThread().start()
 # Start the WeMo event loop
 logger.debug('Entering WeMo event loop')
 wemoEnv.wait()
+logger.debug('Interrupted, bailing...')
+logger.debug('You might need to wait up to %d seconds for Hue thread to die')
+run_event.clear()
+exit(0)
