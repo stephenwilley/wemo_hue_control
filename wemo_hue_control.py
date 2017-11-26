@@ -34,11 +34,13 @@ appname = 'WeMoHueControl'
 logging.basicConfig(
     format='[%(levelname)s] %(asctime)s (%(threadName)-10s) %(message)s')
 logger = logging.getLogger('wemo_hue_control')
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
+
+logger.info('Starting')
 
 # Initiate WeMo environment
 wemoEnv = Environment()
-logger.debug('Starting environment')
+logger.debug('Starting WeMo environment')
 wemoEnv.start()
 
 # Debug handler for finding devices
@@ -86,7 +88,8 @@ class hueWatcherThread(threading.Thread):
                 logger.debug('Hue poller timed out')
             onAfterPoll = myHue.getLight(whichLights[0])['json']['state']['on']
             if onAfterPoll != onBeforePoll:
-	        logger.debug('Lamps are now %s', ('Off', 'On')[onAfterPoll])
+                logger.debug('Lamps are now %s', ('Off', 'On')[onAfterPoll])
+                logger.info('Hue event detected - Updating WeMo')
                 # Now send the on/off to the WeMo switch
                 switch.on() if onAfterPoll else switch.off()
                 logger.debug('Turning on switch') if onAfterPoll else logger.debug('Turning off switch')
@@ -95,7 +98,7 @@ class hueWatcherThread(threading.Thread):
 # Create a statechange receiver
 @receiver(statechange)
 def switch_toggle(sender, **kwargs):
-    logger.debug('Event detected - Will update Hue')
+    logger.info('WeMo event detected - Updating Hue')
     logger.debug('Sender: %s, Args: %s', sender, kwargs['state'])
     if sender == switch:
         # Now actually set all the lights
@@ -106,12 +109,14 @@ def switch_toggle(sender, **kwargs):
                 myHue.turnOn(light)
 
 # Kick off the Hue thread
+logger.info('Starting the Hue watcher thread')
 hueWatcherThread().start()
 
 # Start the WeMo event loop
-logger.debug('Entering WeMo event loop')
+logger.info('Entering WeMo event loop')
 wemoEnv.wait()
 logger.debug('Interrupted, bailing...')
 logger.debug('You might need to wait up to %d seconds for Hue thread to die')
 run_event.clear()
+logger.info('Quitting')
 exit(0)
