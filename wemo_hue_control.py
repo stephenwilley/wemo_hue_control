@@ -110,7 +110,7 @@ def switch_toggle(sender, **kwargs):
 
 # Kick off the Hue thread
 logger.info('Starting the Hue watcher thread')
-hueWatcherThread().start()
+hueWatcherThread(name='HueWatcher').start()
 
 # Start the WeMo event loop
 logger.info('Entering WeMo event loop')
