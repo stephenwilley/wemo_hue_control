@@ -24,7 +24,7 @@ brightness = 254
 howOften = 1
 pollerTimeout = 10
 # WeMo light switch to listen for/set
-switchToListenFor = 'KitchenOverheads'
+switchToListenFor = 'LivingRoomPhysicalLightSwitch'
 # End of user modifyable bits
 
 # Appname for Hue
@@ -97,12 +97,13 @@ class hueWatcherThread(threading.Thread):
 def switch_toggle(sender, **kwargs):
     logger.debug('Event detected - Will update Hue')
     logger.debug('Sender: %s, Args: %s', sender, kwargs['state'])
-    # Now actually set all the lights
-    for light in whichLights:
-	if kwargs['state'] == 0:
-	    myHue.turnOff(light)
-	else:
-	    myHue.turnOn(light)
+    if sender == switch:
+        # Now actually set all the lights
+        for light in whichLights:
+	    if kwargs['state'] == 0:
+	        myHue.turnOff(light)
+            else:
+                myHue.turnOn(light)
 
 # Kick off the Hue thread
 hueWatcherThread().start()
