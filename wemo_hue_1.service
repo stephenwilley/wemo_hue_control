@@ -1,0 +1,16 @@
+# systemd unit file for wemo_hue_control
+#
+# In this particular example I've put the python script in /usr/local/bin
+# You can make multiple copies of this if you want more than one switch
+# Just use multiple copies of the python script with different configurations
+
+[Unit]
+Description=Wemo Hue Living Room
+After=multi-user.target
+
+[Service]
+Type=idle
+ExecStart=/usr/local/bin/wemo_hue_control_1
+
+[Install]
+WantedBy=multi-user.target
