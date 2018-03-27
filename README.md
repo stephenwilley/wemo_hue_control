@@ -15,11 +15,12 @@ Works but needs improvement.  TODO:
 * It's a bit slow when you turn change the Hue lamps to propagate the change to WeMo.  Seems like a hub limitation.
 * Tidy up camel case vs underscores everywhere.
 * Create script to do the pyphue connection (in the meantime, just look at the pyphue docs for the wizard)
+* If things reboot and pick up different IPs, the script needs restarting.  This could be handled, but it's probably easier to just set your devices to static DHCP or similar.
 
 ### Prerequisites
 
-WeMo bits requires ouimeaux from https://github.com/iancmcc/ouimeaux
-Hue bits require PyPHue from https://github.com/rdespoiu/PyPHue
-Also relies on Python polling module
+* WeMo bits requires ouimeaux from https://github.com/iancmcc/ouimeaux
+* Hue bits require PyPHue from https://github.com/rdespoiu/PyPHue
+* Also relies on Python polling module
 
-Use `pip install ouimeaux pyphue polling`
+Use `pip install pyphue polling` and `pip install git+https://github.com/iancmcc/ouimeaux.git` 
